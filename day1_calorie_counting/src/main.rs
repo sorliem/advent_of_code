@@ -24,8 +24,3 @@ fn main() {
     println!("biggest calorie amount from single elf: {}", biggest_elf_calories);
     println!("sum of top 3 calorie counts: {:?}", sum_top_three);
 }
-
-fn foo(totals: usize) {
-    println!("totals: {:?}", totals)
-}
-
