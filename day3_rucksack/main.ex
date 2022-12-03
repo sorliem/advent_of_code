@@ -1,5 +1,3 @@
-
-
 defmodule Day3Rucksack do
   @moduledoc """
   """
