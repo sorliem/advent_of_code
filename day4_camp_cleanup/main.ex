@@ -5,12 +5,19 @@ defmodule Day4CampCleanup do
   """
 
   def run(file) do
-    File.read!(file)
-    |> String.trim()
-    |> String.split("\n", trim: true)
-    |> Enum.map(&to_pairs/1)
+    pairs =
+      File.read!(file)
+      |> String.trim()
+      |> String.split("\n", trim: true)
+      |> Enum.map(&to_pairs/1)
+
+    pairs
     |> Enum.reduce(0, &fully_contains?/2)
-    |> IO.inspect()
+    |> IO.inspect(label: "part1 fully contains count")
+
+    pairs
+    |> Enum.reduce(0, &any_overlap?/2)
+    |> IO.inspect(label: "pairs with any overlap")
   end
 
   defp to_pairs(line) do
@@ -28,28 +35,26 @@ defmodule Day4CampCleanup do
     end
   end
 
-  # 2-4,6-8
-  # 2-3,4-5
-  # 5-7,7-9
-  # 2-8,3-7  <
-  # 6-6,4-6  <
-  # 2-6,4-8
-  def fully_contains?({{l, h}, {l, h}} = pair, acc) do
-    IO.inspect(pair, label: "pair is exact same")
-    acc + 2
-  end
-
-  def fully_contains?({{l1, h1}, {l2, h2}} = pair, acc) when h2 >= h1 and l2 <= l1 do
-    # IO.inspect(pair, label: "pair that fully contains")
+  def fully_contains?({{l, h}, {l, h}}, acc) do
+    # pair is exact same
     acc + 1
   end
 
-  def fully_contains?({{l1, h1}, {l2, h2}} = pair, acc) when h1 >= h2 and l1 <= l2 do
-    # IO.inspect(pair, label: "pair that fully contains")
+  def fully_contains?({{l1, h1}, {l2, h2}}, acc) when h2 >= h1 and l2 <= l1 do
+    acc + 1
+  end
+
+  def fully_contains?({{l1, h1}, {l2, h2}}, acc) when h1 >= h2 and l1 <= l2 do
     acc + 1
   end
 
   def fully_contains?(_, acc), do: acc
+
+  def any_overlap?({{_l1, h1}, {l2, _h2}}, acc) when h1 >= l2 do
+    acc + 1
+  end
+
+  def any_overlap?(_, acc), do: acc
 end
 
 # prev wrong answers: 496, 556
