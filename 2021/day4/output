@@ -1,0 +1,43 @@
+called 30, no winner
+called 35, no winner
+called  8, no winner
+called  2, no winner
+called 39, no winner
+called 37, no winner
+called 72, no winner
+called  7, no winner
+called 81, no winner
+called 41, no winner
+called 25, no winner
+called 46, no winner
+called 56, no winner
+called 18, no winner
+called 89, no winner
+called 70, no winner
+called  0, no winner
+called 15, no winner
+called 84, no winner
+called 75, no winner
+called 88, no winner
+called 67, no winner
+called 42, no winner
+called 44, no winner
+called 94, no winner
+called 71, no winner
+called 79, no winner
+called 65, no winner
+called 58, no winner
+called 52, no winner
+called 96, no winner
+called 83, no winner
+called 54, no winner
+called 29, no winner
+WINNING CALL: 14
+WINNING BOARD
+{75 T} {62 F} {66 F} {74 F} {37 T} 
+{14 T} {79 T} {35 T} {96 T} {30 T} 
+{33 F} {25 T} {29 T} {57 F} { 6 F} 
+{60 F} {93 F} {17 F} {55 F} {53 F} 
+{65 T} {16 F} {59 F} {40 F} {27 F} 
+unmarked total: 718, call: 14
+score (unmarked total * call) = 10052
