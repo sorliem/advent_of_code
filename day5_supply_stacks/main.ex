@@ -9,20 +9,68 @@ defmodule Day5SupplyStacks do
       File.read!(file)
       |> String.split("\n\n", trim: true)
 
+    moveset = parse_moveset(moveset)
+
     stacks_raw
     |> construct_stacks()
-    |> IO.inspect(label: "construct_stacks")
     |> move_containers(moveset)
     |> top_stacks()
     |> IO.inspect(label: "top letter across stacks")
   end
 
+  defp parse_moveset(moveset) do
+    moveset
+    |> String.split("\n")
+    |> Enum.flat_map(&parse_line/1)
+  end
+
+  defp parse_line(<<"move ", amt::binary-size(1), " from ",  from::binary-size(1), " to ", to::binary-size(1)>>) do
+    [{
+      String.to_integer(amt),
+      String.to_integer(from),
+      String.to_integer(to),
+    }]
+  end
+
+  defp parse_line(<<"move ", amt::binary-size(2), " from ",  from::binary-size(1), " to ", to::binary-size(1)>>) do
+    [{
+      String.to_integer(amt),
+      String.to_integer(from),
+      String.to_integer(to),
+    }]
+  end
+
+  defp parse_line(""), do: []
+
   defp move_containers(stacks, moveset) do
-    stacks
+    Enum.reduce(moveset, stacks, fn {amt, from, to} = move, stacks ->
+      from_idx = int_to_word(from)
+      to_idx = int_to_word(to)
+
+      from_stack = Keyword.get(stacks, from_idx)
+      {from_remaining, to_be_moved} = Enum.split(from_stack, -amt)
+
+      to_stack = Keyword.get(stacks, to_idx)
+
+      # Part 1, crates are reversed
+      # to_stack_final = to_stack ++ Enum.reverse(to_be_moved)
+
+      # Part 2, crates are NOT reversed
+      to_stack_final = to_stack ++ to_be_moved
+
+      stacks
+      |> Keyword.put(from_idx, from_remaining)
+      |> Keyword.put(to_idx, to_stack_final)
+    end)
   end
 
   defp top_stacks(stacks) do
-    "TODO"
+    stacks
+    |> Enum.sort_by(fn {idx, _stack} -> word_to_int(idx) end, &Kernel.<=/2)
+    |> IO.inspect(label: "sorted final stack")
+    |> Enum.reduce("", fn {_idx, stack}, acc ->
+      acc <> List.last(stack)
+    end)
   end
 
   defp construct_stacks(stacks_raw) do
@@ -94,6 +142,20 @@ defmodule Day5SupplyStacks do
       9 -> :nine
     end
   end
+
+  def word_to_int(int) do
+    case int do
+      :one -> 1
+      :two -> 2
+      :three -> 3
+      :four -> 4
+      :five -> 5
+      :six -> 6
+      :seven -> 7
+      :eight -> 8
+      :nine -> 9
+    end
+  end
 end
 
-Day5SupplyStacks.run("input.test")
+Day5SupplyStacks.run("input")
