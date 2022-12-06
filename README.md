@@ -1,1 +1,1 @@
-# Advent of Code 2022 Solutions
+# Advent of Code Solutions
