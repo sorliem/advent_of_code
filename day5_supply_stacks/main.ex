@@ -129,6 +129,7 @@ defmodule Day5SupplyStacks do
   defp item(["[", n, "]", "\n"]), do: {:rightmost_crate, n}
   defp item([" ", " ", " ", " "]), do: :blank
 
+  # this is dumb
   def int_to_word(int) do
     case int do
       1 -> :one
@@ -143,6 +144,7 @@ defmodule Day5SupplyStacks do
     end
   end
 
+  # this is dumb
   def word_to_int(int) do
     case int do
       :one -> 1
