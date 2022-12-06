@@ -1,12 +1,11 @@
-
-
 defmodule Day5SupplyStacks do
   @moduledoc """
   """
 
   def run(file) do
     [stacks_raw, moveset] =
-      File.read!(file)
+      file
+      |> File.read!()
       |> String.split("\n\n", trim: true)
 
     moveset = parse_moveset(moveset)
@@ -43,7 +42,7 @@ defmodule Day5SupplyStacks do
   defp parse_line(""), do: []
 
   defp move_containers(stacks, moveset) do
-    Enum.reduce(moveset, stacks, fn {amt, from, to} = move, stacks ->
+    Enum.reduce(moveset, stacks, fn {amt, from, to}, stacks ->
       from_idx = int_to_word(from)
       to_idx = int_to_word(to)
 
