@@ -18,7 +18,6 @@ defmodule Day6TuningTrouble do
     Enum.reduce_while(0..len, nil, fn i, _acc ->
       quad = String.slice(buffer, i, 4)
 
-
       uniq_letters =
         quad
         |> String.codepoints()
