@@ -19,15 +19,13 @@ defmodule Day6TuningTrouble do
       quad = String.slice(buffer, i, 14)
 
 
-      unique? =
+      uniq_letters =
         quad
         |> String.codepoints()
         |> Enum.uniq()
-        |> (fn l -> length(l) == 4 end).()
 
-        if unique? do
-          pos = i + 4
-          IO.inspect({quad, pos}, label: "pt1. unique start-of-packet marker")
+        if length(uniq_letters) == 4 do
+          IO.inspect({quad, i + 4}, label: "pt1. unique start-of-packet marker")
           {:halt, nil}
         else
           {:cont, nil}
@@ -39,15 +37,14 @@ defmodule Day6TuningTrouble do
     len = String.length(buffer)
 
     Enum.reduce_while(0..len, nil, fn i, _acc ->
-      slice = String.slice(buffer, 0+i, 14)
+      slice = String.slice(buffer, 0 + i, 14)
 
-      unique? =
+      uniq_letters =
         slice
         |> String.codepoints()
         |> Enum.uniq()
-        |> (fn l -> length(l) == 14 end).()
 
-        if unique? do
+        if length(uniq_letters) == 14 do
           IO.inspect({slice, i + 14}, label: "pt2. unique start-of-message marker")
           {:halt, nil}
         else
