@@ -9,7 +9,7 @@ defmodule Day9RopeBridge do
    y|
     |
    0|________________
-    0      x ->
+    0      x->
   """
 
   def run(file) do
@@ -131,11 +131,7 @@ defmodule Day9RopeBridge do
     |> IO.inspect(label: "number of spots tail has visited")
   end
 
-  defp parse_move(<<dir::binary-size(1), " ", dist::binary-size(1)>>) do
-    to_dir(dir, String.to_integer(dist))
-  end
-
-  defp parse_move(<<dir::binary-size(1), " ", dist::binary-size(2)>>) do
+  defp parse_move(<<dir::binary-size(1), " ">> <> dist) do
     to_dir(dir, String.to_integer(dist))
   end
 
@@ -144,8 +140,8 @@ defmodule Day9RopeBridge do
   defp to_dir("L", dist), do: {:left, dist}
   defp to_dir("D", dist), do: {:down, dist}
 
-  def euc_distance({x1, y1} = _head, {x2, y2} = _tail) do
-    :math.sqrt(:math.pow(y2-y1, 2) + :math.pow(x2-x1, 2))
+  def euc_distance({hx, hy} = _head, {tx, ty} = _tail) do
+    :math.sqrt(:math.pow(ty-hy, 2) + :math.pow(tx-hx, 2))
   end
 end
 
