@@ -3,17 +3,13 @@ defmodule Day8TreetopTreeHouse do
   """
 
   def run(file) do
-    marked_forest =
-      file
-      |> File.read!()
-      |> String.split("\n", trim: true)
-      |> Enum.reduce([], &build_forest/2)
-      |> Enum.reverse()
-      |> IO.inspect(label: "forest")
-      |> mark_visible()
-      |> IO.inspect(label: "after mark_visible")
-
-    count_visible(marked_forest)
+    file
+    |> File.read!()
+    |> String.split("\n", trim: true)
+    |> Enum.reduce([], &build_forest/2)
+    |> Enum.reverse()
+    |> mark_visible()
+    |> count_visible()
   end
 
   defp mark_visible(forest) do
@@ -47,10 +43,7 @@ defmodule Day8TreetopTreeHouse do
       end)
       |> Enum.reverse()
 
-    {top, [{cross, _} | bottom]} = Enum.split(col, row_idx)
-    if cross != inspected_val do
-      IO.inspect({cross, inspected_val}, label: "col {cross, inspected_val} do NOT MATCH!")
-    end
+    {top, [{_inspected_val, _} | bottom]} = Enum.split(col, row_idx)
 
     case {top, bottom} do
       {[], _} ->
@@ -74,11 +67,7 @@ defmodule Day8TreetopTreeHouse do
     row = Enum.at(forest, row_idx)
     {inspected_val, _} = Enum.at(row, col_idx)
 
-    {left, [{cross, _} | right]} = Enum.split(row, col_idx)
-
-    if cross != inspected_val do
-      IO.inspect({cross, inspected_val}, label: "row {cross, inspected_val} do NOT MATCH!")
-    end
+    {left, [{_inspected_val, _} | right]} = Enum.split(row, col_idx)
 
     case {left, right} do
       {[], _} ->
