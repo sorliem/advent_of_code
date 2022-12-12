@@ -29,7 +29,9 @@ defmodule MonkeyBusiness do
     IO.puts("\n==== BEFORE GAME ====")
     print_stats(0, monkey_pids)
 
-    for i <- 1..10_000 do
+    rounds = 10_000
+
+    for i <- 1..rounds do
       if rem(i, 20) == 0 do
         IO.puts("\n==== ROUND #{i} ====")
       end
@@ -45,7 +47,8 @@ defmodule MonkeyBusiness do
 
       # print_stats(i, monkey_pids)
     end
-    print_stats(10_000, monkey_pids)
+
+    print_stats(rounds, monkey_pids)
   end
 
   def print_stats() do
@@ -84,9 +87,6 @@ defmodule MonkeyBusiness do
       else
         []
       end
-    end)
-    |> Enum.reduce(%{}, fn {id, pid}, acc ->
-      Map.put(acc, id, pid)
     end)
   end
 
