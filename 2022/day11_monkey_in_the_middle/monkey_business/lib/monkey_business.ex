@@ -32,11 +32,11 @@ defmodule MonkeyBusiness do
     rounds = 10_000
 
     for i <- 1..rounds do
-      if rem(i, 20) == 0 do
+      if rem(i, 1_000) == 0 do
         IO.puts("\n==== ROUND #{i} ====")
       end
 
-      for {monkey_id, pid} <- monkey_pids do
+      for {_monkey_id, pid} <- monkey_pids do
         ref = make_ref()
         send(pid, {:do_turn, self(), ref})
 
@@ -63,7 +63,7 @@ defmodule MonkeyBusiness do
       Enum.map(monkey_pids, fn {monkey_id, pid} ->
         {items, inspect_count} = GenServer.call(pid, :get_stats)
         items = Enum.map(items, fn item -> "#{item}" end)
-        IO.puts("R#{i}Monkey#{monkey_id}: #{inspect items}, inspect_count: #{inspect_count}")
+        IO.puts("R#{i}-Monkey#{monkey_id}: #{inspect items}, inspect_count: #{inspect_count}")
 
         inspect_count
       end)
