@@ -7,14 +7,23 @@ defmodule MonkeyBusiness.Application do
 
   @impl true
   def start(_type, _args) do
-    children = [
-      # Starts a worker by calling: MonkeyBusiness.Worker.start_link(arg)
-      # {MonkeyBusiness.Worker, arg}
-    ]
+
+    monkey_children = build_children()
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
     opts = [strategy: :one_for_one, name: MonkeyBusiness.Supervisor]
-    Supervisor.start_link(children, opts)
+    Supervisor.start_link(monkey_children, opts)
+  end
+
+  defp build_children() do
+    :monkey_business
+    |> :code.priv_dir()
+    |> Path.join("input.test")
+    |> MonkeyBusiness.build_monkeys()
+    |> Enum.map(fn monkey ->
+      args = [monkey: monkey]
+      {MonkeyServer, args}
+    end)
   end
 end

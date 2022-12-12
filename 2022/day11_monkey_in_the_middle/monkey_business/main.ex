@@ -1,4 +1,4 @@
-defmodule Day11MonkeyInTheMiddle do
+defmodule MonkeyBusiness do
   @moduledoc """
   """
 
@@ -14,7 +14,7 @@ defmodule Day11MonkeyInTheMiddle do
     ]
   end
 
-  def run(file) do
+  def build_monkeys(file) do
     monkeys =
       file
       |> File.read!()
@@ -22,14 +22,12 @@ defmodule Day11MonkeyInTheMiddle do
       |> Enum.map(&to_monkey/1)
       |> IO.inspect(label: "monkeys")
 
-    pids =
-      for monkey <- monkeys do
-        MonkeyServer.start_link(monkey: monkey)
-      end
-    |> IO.inspect(label: "pids")
+    # pids =
+    #   for monkey <- monkeys do
+    #     MonkeyServer.start_link(monkey: monkey)
+    #   end
+    # |> IO.inspect(label: "pids")
 
-    # |> play_game()
-    # |> calculate_monkey_business()
   end
 
   defp play_game(monkeys) do
@@ -135,4 +133,4 @@ defmodule Day11MonkeyInTheMiddle do
   end
 end
 
-Day11MonkeyInTheMiddle.run("input.test")
+# MonkeyBusiness.run("input.test")
