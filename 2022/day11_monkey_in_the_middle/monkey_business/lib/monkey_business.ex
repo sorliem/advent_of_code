@@ -22,17 +22,12 @@ defmodule MonkeyBusiness do
   end
 
   def play_game() do
-    IO.puts("playing game...")
     monkey_pids = get_monkeys()
 
     IO.puts("\n==== BEFORE GAME ====")
     print_stats(0, monkey_pids)
 
-    for i <- 1..10_000 do
-      if rem(i, 5) == 0 do
-        IO.puts("\n==== ROUND #{i} ====")
-      end
-
+    for i <- 1..20 do
       for {monkey_id, pid} <- monkey_pids do
         ref = make_ref()
         send(pid, {:do_turn, self(), ref})
@@ -42,10 +37,8 @@ defmodule MonkeyBusiness do
         end
       end
 
-      # print_stats(i, monkey_pids)
+      print_stats(i, monkey_pids)
     end
-
-    print_stats()
   end
 
   def print_stats() do
@@ -54,6 +47,8 @@ defmodule MonkeyBusiness do
   end
 
   defp print_stats(i, monkey_pids) do
+    IO.puts("")
+
     inspect_counts =
       Enum.map(monkey_pids, fn {monkey_id, pid} ->
         {items, inspect_count} = GenServer.call(pid, :get_stats)
@@ -158,7 +153,7 @@ defmodule MonkeyBusiness do
   defp get_prop(<<"Test: divisible by ", i::binary>>) do
     n = String.to_integer(i)
     fun = fn worry_level ->
-      # 23 mod trick
+      # 23 mod trick???
       remain = rem(worry_level, 23 * n)
 
       rem(remain, n) == 0

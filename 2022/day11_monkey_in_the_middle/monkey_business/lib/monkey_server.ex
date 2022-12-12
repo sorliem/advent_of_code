@@ -22,16 +22,14 @@ defmodule MonkeyServer do
   end
 
   def handle_info({:do_turn, from_pid, ref}, monkey) do
-    # for each item in queue, do operation, test, and send to monkey
     q_len = :queue.len(monkey.items)
 
     {_queue, new_inspect_count} =
       Enum.reduce(0..q_len-1, {monkey.items, monkey.inspect_count}, fn _, {monkey_queue, inspect_count} ->
         case :queue.out(monkey_queue) do
           {{:value, item}, rem_queue} ->
-            new_val = monkey.operation_fn.(item)
-            # val_after_worry = Integer.floor_div(new_val, 3)
-            # val_after_worry = new_val
+            val = monkey.operation_fn.(item)
+            new_val = Integer.floor_div(val, 3)
 
             to_pid =
               if monkey.test_fn.(new_val) do
