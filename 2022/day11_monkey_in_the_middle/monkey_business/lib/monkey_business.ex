@@ -15,30 +15,66 @@ defmodule MonkeyBusiness do
   end
 
   def build_monkeys(file) do
-    monkeys =
-      file
-      |> File.read!()
-      |> String.split("\n\n", trim: true)
-      |> Enum.map(&to_monkey/1)
-      |> IO.inspect(label: "monkeys")
-
-    # pids =
-    #   for monkey <- monkeys do
-    #     MonkeyServer.start_link(monkey: monkey)
-    #   end
-    # |> IO.inspect(label: "pids")
-
+    file
+    |> File.read!()
+    |> String.split("\n\n", trim: true)
+    |> Enum.map(&to_monkey/1)
   end
 
-  defp play_game(monkeys) do
-    Enum.reduce(1..20, monkeys, fn _i, monkeys ->
-      for monkey <- monkeys do
-        q_len = :queue.len(monkey.items)
-        Enum.reduce_while(0..q_len, monkey, fn _i, cur_monkey ->
-          # {:cont, m
+  def play_game() do
+    IO.puts("playing game...")
+    monkey_pids = get_monkeys()
 
-        end)
+    IO.puts("\n==== BEFORE GAME ====")
+    print_stats(0, monkey_pids)
+
+    for i <- 1..20 do
+      IO.puts("\n==== ROUND #{i} ====")
+      for {monkey_id, pid} <- monkey_pids do
+        ref = make_ref()
+        send(pid, {:do_turn, self(), ref})
+
+        receive do
+          {:turn_done, ^ref} -> :ok
+        end
       end
+
+      print_stats(i, monkey_pids)
+    end
+  end
+
+  defp print_stats(i, monkey_pids) do
+    inspect_counts =
+      Enum.map(monkey_pids, fn {monkey_id, pid} ->
+        {items, inspect_count} = GenServer.call(pid, :get_stats)
+        items = Enum.map(items, fn item -> "#{item}" end)
+        IO.puts("R#{i}Monkey#{monkey_id}: #{inspect items}, inspect_count: #{inspect_count}")
+
+        inspect_count
+      end)
+
+    monkey_business =
+      inspect_counts
+      |> Enum.sort()
+      |> Enum.reverse()
+      |> Enum.take(2)
+      |> Enum.reduce(1, fn i, acc -> i * acc end)
+
+    IO.puts("total monkey business at ROUND #{i}: #{monkey_business}")
+  end
+
+  defp get_monkeys() do
+    Supervisor.which_children(Elixir.MonkeyBusiness.Supervisor)
+    |> Enum.sort_by(fn {id, _, _, _} -> id end)
+    |> Enum.flat_map(fn {id, pid, _, _} ->
+      if Atom.to_string(id) =~ "MonkeyServer" do
+        [{id, pid}]
+      else
+        []
+      end
+    end)
+    |> Enum.reduce(%{}, fn {id, pid}, acc ->
+      Map.put(acc, id, pid)
     end)
   end
 
