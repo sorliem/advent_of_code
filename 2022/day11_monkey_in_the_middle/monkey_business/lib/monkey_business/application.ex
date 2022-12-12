@@ -28,7 +28,7 @@ defmodule MonkeyBusiness.Application do
   defp build_children() do
     :monkey_business
     |> :code.priv_dir()
-    |> Path.join("input")
+    |> Path.join("input.test")
     |> MonkeyBusiness.build_monkeys()
     |> Enum.map(fn monkey ->
       args = [monkey: monkey]

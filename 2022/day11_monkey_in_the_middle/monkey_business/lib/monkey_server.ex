@@ -30,20 +30,19 @@ defmodule MonkeyServer do
         case :queue.out(monkey_queue) do
           {{:value, item}, rem_queue} ->
             new_val = monkey.operation_fn.(item)
-            val_after_worry = Integer.floor_div(new_val, 3)
+            # val_after_worry = Integer.floor_div(new_val, 3)
+            # val_after_worry = new_val
 
-            {to_pid, to_monkey_id} =
-              if monkey.test_fn.(val_after_worry) do
-                {monkey_id_to_pid(monkey.test_true_id), monkey.test_true_id}
+            to_pid =
+              if monkey.test_fn.(new_val) do
+                monkey_id_to_pid(monkey.test_true_id)
               else
-                {monkey_id_to_pid(monkey.test_false_id), monkey.test_false_id}
+                monkey_id_to_pid(monkey.test_false_id)
               end
 
             ref = make_ref()
-            # IO.puts("monkey #{monkey.id} throwing #{val_after_worry} to monkey #{to_monkey_id}")
-            # IO.puts("monkey #{monkey.id} sending #{val_after_worry} to monkey #{inspect to_pid}")
 
-            send(to_pid, {:store_item, val_after_worry, self(), ref})
+            send(to_pid, {:store_item, new_val, self(), ref})
 
             receive do
               {:stored, ^ref} -> :ok

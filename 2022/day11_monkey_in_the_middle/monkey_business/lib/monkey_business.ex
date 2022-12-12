@@ -28,8 +28,11 @@ defmodule MonkeyBusiness do
     IO.puts("\n==== BEFORE GAME ====")
     print_stats(0, monkey_pids)
 
-    for i <- 1..20 do
-      IO.puts("\n==== ROUND #{i} ====")
+    for i <- 1..10_000 do
+      if rem(i, 5) == 0 do
+        IO.puts("\n==== ROUND #{i} ====")
+      end
+
       for {monkey_id, pid} <- monkey_pids do
         ref = make_ref()
         send(pid, {:do_turn, self(), ref})
@@ -39,8 +42,15 @@ defmodule MonkeyBusiness do
         end
       end
 
-      print_stats(i, monkey_pids)
+      # print_stats(i, monkey_pids)
     end
+
+    print_stats()
+  end
+
+  def print_stats() do
+    monkey_pids = get_monkeys()
+    print_stats(:end, monkey_pids)
   end
 
   defp print_stats(i, monkey_pids) do
@@ -147,7 +157,13 @@ defmodule MonkeyBusiness do
 
   defp get_prop(<<"Test: divisible by ", i::binary>>) do
     n = String.to_integer(i)
-    fun = fn worry_level -> rem(worry_level, n) == 0 end
+    fun = fn worry_level ->
+      # 23 mod trick
+      remain = rem(worry_level, 23 * n)
+
+      rem(remain, n) == 0
+      # rem(worry_level, n * 23)
+    end
 
     {:test_fn, fun}
   end
@@ -163,10 +179,4 @@ defmodule MonkeyBusiness do
 
     {:test_false_id, n}
   end
-
-  defp calculate_monkey_business(_monkeys) do
-    IO.puts("TODO: calculate monkey business")
-  end
 end
-
-# MonkeyBusiness.run("input.test")
