@@ -28,8 +28,9 @@ defmodule MonkeyServer do
       Enum.reduce(0..q_len-1, {monkey.items, monkey.inspect_count}, fn _, {monkey_queue, inspect_count} ->
         case :queue.out(monkey_queue) do
           {{:value, item}, rem_queue} ->
-            val = monkey.operation_fn.(item)
-            new_val = Integer.floor_div(val, 3)
+            downsized = rem(item, monkey.common_mult_n)
+            new_val = monkey.operation_fn.(downsized)
+            # new_val = Integer.floor_div(val, 3)
 
             to_pid =
               if monkey.test_fn.(new_val) do

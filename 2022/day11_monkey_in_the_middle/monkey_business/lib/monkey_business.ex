@@ -7,6 +7,8 @@ defmodule MonkeyBusiness do
       id: nil,
       items: :queue.new(),
       inspect_count: 0,
+      div_n: nil,
+      common_mult_n: nil,
       operation_fn: nil,
       test_fn: nil,
       test_true_id: nil,
@@ -27,7 +29,11 @@ defmodule MonkeyBusiness do
     IO.puts("\n==== BEFORE GAME ====")
     print_stats(0, monkey_pids)
 
-    for i <- 1..20 do
+    for i <- 1..10_000 do
+      if rem(i, 20) == 0 do
+        IO.puts("\n==== ROUND #{i} ====")
+      end
+
       for {monkey_id, pid} <- monkey_pids do
         ref = make_ref()
         send(pid, {:do_turn, self(), ref})
@@ -37,8 +43,9 @@ defmodule MonkeyBusiness do
         end
       end
 
-      print_stats(i, monkey_pids)
+      # print_stats(i, monkey_pids)
     end
+    print_stats(10_000, monkey_pids)
   end
 
   def print_stats() do
@@ -103,8 +110,8 @@ defmodule MonkeyBusiness do
         {:operation_fn, fun} ->
           %Monkey{m | operation_fn: fun}
 
-        {:test_fn, fun} ->
-          %Monkey{m | test_fn: fun}
+        {:test_fn, fun, n} ->
+          %Monkey{m | test_fn: fun, div_n: n}
 
         {:test_true_id, id} ->
           %Monkey{m | test_true_id: id}
@@ -153,14 +160,13 @@ defmodule MonkeyBusiness do
   defp get_prop(<<"Test: divisible by ", i::binary>>) do
     n = String.to_integer(i)
     fun = fn worry_level ->
-      # 23 mod trick???
+      # 23 mod trick
       remain = rem(worry_level, 23 * n)
 
       rem(remain, n) == 0
-      # rem(worry_level, n * 23)
     end
 
-    {:test_fn, fun}
+    {:test_fn, fun, n}
   end
 
   defp get_prop(<<"If true: throw to monkey ", i::binary>>) do
