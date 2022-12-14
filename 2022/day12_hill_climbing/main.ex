@@ -59,11 +59,7 @@ defmodule Day12HillClimbing do
   end
 
   def start_loop({x, y}, height, opts \\ []) do
-    all_opts = [
-      visits: [],
-      out_nodes: [],
-      visited: false
-    ] ++ opts
+    all_opts = [ visited: false ] ++ opts
 
     loop({x, y}, height, all_opts)
   end
@@ -81,7 +77,7 @@ defmodule Day12HillClimbing do
             [{x, y} | visits]
           end)
 
-        send_to_unvisited({x, y}, height, :start, opts[:visits], opts[:pid_map])
+        send_to_unvisited({x, y}, height, :start, 1, opts[:pid_map])
 
         opts = Keyword.put(opts, :visited, true)
 
@@ -92,18 +88,13 @@ defmodule Day12HillClimbing do
 
         loop({x, y}, height, opts)
 
-      {:visit_from, {vx, vy, from_dir, visit_chain}} ->
-        opts =
-          Keyword.update(opts, :visits, [], fn visits ->
-            [{x, y} | visits]
-          end)
-
+      {:visit_from, {vx, vy, from_dir, visit_count}} ->
         if height == ?E do
-          IO.puts("GOT TO END!!, visit chain: #{inspect opts[:visit_chain]}")
+          IO.puts("GOT TO END!!, visit_count: #{visit_count}")
         end
 
         IO.puts("visit from cell to #{from_dir}, {#{vx},#{vy}}")
-        send_to_unvisited({x, y}, height, from_dir, opts[:visits], opts[:pid_map])
+        send_to_unvisited({x, y}, height, from_dir, visit_count+1, opts[:pid_map])
 
         opts = Keyword.put(opts, :visited, true)
 
@@ -116,18 +107,18 @@ defmodule Day12HillClimbing do
     end
   end
 
-  defp send_to_unvisited({x, y} = cell, height, :start, visit_chain, pid_map) do
+  defp send_to_unvisited({x, y} = cell, height, :start, visit_count, pid_map) do
     dirs = [down: down(cell), up: up(cell), left: left(cell), right: right(cell)]
 
     Enum.each(dirs, fn {dir, cell} ->
 
       if pid = Map.get(pid_map, cell)[:pid] do
-        send(pid, {:visit_from, {x, y, opposite(dir), [cell]}})
+        send(pid, {:visit_from, {x, y, opposite(dir), visit_count}})
       end
     end)
   end
 
-  defp send_to_unvisited({x, y} = cell, height, from_dir, visit_chain, pid_map) do
+  defp send_to_unvisited({x, y} = cell, height, from_dir, visit_count, pid_map) do
     dirs = other_dirs(from_dir, cell)
 
     Enum.each(dirs, fn {dir, cell} ->
@@ -143,7 +134,7 @@ defmodule Day12HillClimbing do
         n_height = Map.get(pid_map, cell)[:height]
 
         unless already_visited? and can_travel?(height, n_height) do
-          send(pid, {:visit_from, {x, y, opposite(dir), visit_chain}})
+          send(pid, {:visit_from, {x, y, opposite(dir), visit_count}})
         end
       else
         # invalid direction
