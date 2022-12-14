@@ -3,14 +3,38 @@ defmodule Day13DistressSignal do
   """
 
   def run(file) do
-    file
-    |> File.read!()
-    |> String.split("\n\n", trim: true)
-    |> Enum.map(fn pair -> String.split(pair, "\n", parts: 2) end)
+    packet_pairs =
+      file
+      |> File.read!()
+      |> String.split("\n\n", trim: true)
+      |> Enum.map(fn pair -> String.split(pair, "\n", parts: 2) end)
+
+    packet_pairs
     |> Enum.map(&parse_to_list/1)
     |> Enum.with_index(1)
     |> Enum.reduce(0, &count_correct_order/2)
     |> IO.inspect(label: "sum of idxs with correct order")
+
+    packet_pairs
+    |> Kernel.++([["[2]"], ["[6]"]])
+    |> Enum.map(&parse_to_list/1)
+    |> Enum.flat_map(fn
+      [l, r] -> [l] ++ [r]
+      l -> [l]
+    end)
+    |> Enum.sort_by(&{commafied(&1), length(&1)})
+    # |> Enum.map(&List.unwrap/1)
+    |> Enum.with_index(1)
+    |> IO.inspect(label: "sorted lists")
+  end
+
+  defp commafied(line) do
+    line
+    |> List.flatten()
+    |> inspect()
+    |> String.replace(" ", "")
+    |> String.replace("[", "")
+    |> String.replace("]", "")
   end
 
   defp count_correct_order({[left, right], idx}, acc) do
@@ -50,18 +74,14 @@ defmodule Day13DistressSignal do
 
   defp check([left_head | left_tail], [right_head | right_tail]) do
     case check(left_head, right_head) do
-      true ->
-        true
-
+      true -> true
       false -> false
-
-      :cont ->
-        check(left_tail, right_tail)
+      :cont -> check(left_tail, right_tail)
     end
   end
 
-  defp parse_to_list([left, right]) do
-    for part <- [left, right] do
+  defp parse_to_list(list_of_strings) do
+    for part <- list_of_strings do
       expr = "Foo=" <> part <> "."
 
       expr
@@ -79,4 +99,4 @@ defmodule Day13DistressSignal do
   end
 end
 
-Day13DistressSignal.run("input")
+Day13DistressSignal.run("input.test")
