@@ -31,35 +31,67 @@ defmodule Day14RegolithReservoir do
       spawn_and_insert(location, @rock)
     end
 
+    IO.puts("map after rock spawn")
+    print_map()
+
     orig_pid = self()
     orig_ref = make_ref()
-    Enum.reduce_while(1..10000, 0, fn _, acc ->
-      do_move({500, 0}, {orig_pid, orig_ref})
 
-      receive do
-        {^orig_ref, :sand_resting} ->
-          {:cont, acc+1}
+    sand_count =
+      Enum.reduce_while(1..100000, 0, fn _, acc ->
+        do_move({500, 0}, {orig_pid, orig_ref})
 
-        {^orig_ref, :void_reached} ->
-          IO.puts("void reached after #{acc} placements of sand")
-          {:cont, acc+1}
+        receive do
+          {^orig_ref, :sand_resting} ->
+            {:cont, acc+1}
 
-        {^orig_ref, :pyramid_complete} ->
-          IO.puts("pyramid complete after #{acc} placements of sand")
-          {:halt, acc}
-      end
-    end)
+          {^orig_ref, :void_reached} ->
+            IO.puts("void reached after #{acc} placements of sand")
+            {:cont, acc+1}
 
-    rock_locations
+          {^orig_ref, :pyramid_complete} ->
+            IO.puts("pyramid complete after #{acc+1} placements of sand")
+            {:halt, acc+1}
+        end
+      end)
+
+    print_map()
+    IO.puts("pyramid complete after #{sand_count} placements of sand")
+  end
+
+  defp print_map() do
+    pid_map = :ets.tab2list(@pid_table) |> Enum.reject(fn {k, _} -> is_atom(k) end)
+
+    {{min_x, _y}, _pid} = Enum.min_by(pid_map, fn {{x, _y}, _pid} -> x end)
+    {{max_x, _y}, _pid} = Enum.max_by(pid_map, fn {{x, _y}, _pid} -> x end)
+    {{_x, min_y}, _pid} = Enum.min_by(pid_map, fn {{_x, y}, _pid} -> y end)
+    {{_x, max_y}, _pid} = Enum.max_by(pid_map, fn {{_x, y}, _pid} -> y end)
+
+
+    xrng = Range.new(min_x, max_x)
+    yrng = Range.new(min_y, max_y)
+
+    for y <- Enum.to_list(yrng) do
+      line =
+        for x <- Enum.to_list(xrng), into: "" do
+          if pid = Enum.find_value(pid_map, fn {{^x,^y}, pid} -> pid; _ -> false end) do
+            ref = make_ref()
+            send(pid, {:get_type, ref, self()})
+
+            receive do
+              {^ref, type} -> type
+            end
+          else
+            @air
+          end
+        end
+
+      IO.puts(line)
+    end
   end
 
   defp do_move({x,y}=coord, {o_pid, o_ref} = orig_info) do
     [{_, max_y}] = :ets.lookup(@pid_table, :max_y)
-
-    # if y < max_y do
-    #   IO.puts("reached the endless void")
-    #   send(o_pid, {o_ref, :void_reached})
-    # end
 
     cond do
       can_move?(coord, :down) ->
@@ -74,6 +106,7 @@ defmodule Day14RegolithReservoir do
       true ->
         # can't move, sand rests.
         if coord == {500,0} do
+          send_to(coord, :store_sand, orig_info)
           send(o_pid, {o_ref, :pyramid_complete})
         else
           send_to(coord, :store_sand, orig_info)
@@ -116,7 +149,6 @@ defmodule Day14RegolithReservoir do
         loop_cell({x, y}, type)
 
       {:store_sand, {orig_pid, orig_ref}} ->
-        IO.puts("sand resting at #{inspect {x,y}}")
         send(orig_pid, {orig_ref, :sand_resting})
         loop_cell({x, y}, @sand)
     end
@@ -134,11 +166,11 @@ defmodule Day14RegolithReservoir do
 
   defp spawn_and_insert({_x,y} = coord, value) do
     [{_, max_y_plus2}] = :ets.lookup(@pid_table, :max_y_plus2)
-    value = if y == max_y_plus2, do: @rock, else: @air
+    value = if y == max_y_plus2, do: @rock, else: value
 
-    if value == @rock do
-      IO.puts("spawning rock at #{inspect coord}")
-    end
+    # if value == @rock do
+    #   IO.puts("spawning rock at #{inspect coord}")
+    # end
 
     pid = spawn(fn -> loop_cell(coord, value) end)
     insert_entry(coord, pid)
@@ -183,4 +215,4 @@ defmodule Day14RegolithReservoir do
   defp down_right({x, y}), do: {x+1, y+1}
 end
 
-Day14RegolithReservoir.run("input.test")
+Day14RegolithReservoir.run("input")
