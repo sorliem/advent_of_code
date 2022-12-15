@@ -7,6 +7,7 @@ defmodule Day14RegolithReservoir do
   @air "."
   @sand "+"
 
+  # INCOMPLETE DOES NOT WORK
   def run(file) do
     rock_locations =
       file
