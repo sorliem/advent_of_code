@@ -3,77 +3,80 @@ defmodule Day5 do
   Day 5: Printe queue
   """
 
-  @init_map %{before: MapSet.new(), after: MapSet.new()}
 
-  def part1(rules, updates) do
-    IO.inspect(updates, label: "updates")
+  def part1(ruleset, updates) do
 
-    ruleset = 
-      Enum.reduce(rules, %{}, fn {l, r}, acc ->
-        # Map.update/4 doesn't run the update function when it doesn't find the
-        # key. So i have to initialize it to ensure i don't miss an entry. blah
-        acc_init = 
-          case {Map.get(acc, l), Map.get(acc, r)} do
-            {nil, nil} -> Map.merge(acc, %{l => @init_map, r => @init_map})
-            {_l_prev, nil} -> Map.put(acc, r, @init_map)
-            {nil, _r_prev} -> Map.put(acc, l, @init_map)
-            {_l_prev, _r_prev} -> acc
-          end
-
-        acc_init
-        |> Map.update!(l, fn %{before: bf} = places ->
-          %{places | before: MapSet.put(bf, r)}
-        end)
-        |> Map.update!(r, fn %{after: aft} = places ->
-          %{places | after: MapSet.put(aft, l)}
-        end)
+    {valid, invalid} =
+      Enum.reduce(updates, {[], []}, fn update, {valid, invalid}->
+        if validate_update(update, ruleset) do
+          {[update | valid], invalid}
+        else
+          {valid, [update | invalid]}
+        end
       end)
-      |> IO.inspect(label: "ruleset")
 
-    Enum.filter(updates, &validate_update(&1, ruleset))
-    |> IO.inspect(label: "after update")
+    valid
     |> Enum.reduce(0, &middle_of_update/2)
     |> IO.inspect(label: "part1 answer")
+
+    invalid
   end
 
   defp validate_update(updates, ruleset) do
     updates
     |> Enum.with_index()
     |> Enum.all?(fn {update, idx} ->
-      # IO.inspect(update, label: "UPDATE")
       updates_l = Enum.slice(updates, 0, idx) |> MapSet.new()
       updates_r = Enum.slice(updates, idx+1, length(updates)) |> MapSet.new()
-      # IO.inspect(updates_l, label: "updates_l")
-      # IO.inspect(updates_r, label: "updates_r")
 
-      %{before: before, after: aft} = rules = Map.get(ruleset, update)
-      # IO.inspect(before, label: "before")
-      # IO.inspect(aft, label: "aft")
+      %{before: before, after: aft} = Map.get(ruleset, update)
       empty = MapSet.new()
 
       case {MapSet.difference(updates_l, aft), MapSet.difference(updates_r, before)} do
         {^empty, ^empty} ->
           true
 
-        res ->
-          IO.inspect(res, label: "res false case")
+        _dfif ->
           false
       end
     end)
   end
 
   defp middle_of_update(update, acc) do
-    # IO.inspect(update, label: "update")
     acc + Enum.at(update, div(length(update)-1,2))
   end
 
+  def part2(ruleset, invalid_updates) do
+    IO.inspect(invalid_updates, label: "invalid_updates")
 
+    invalid_updates
+    |> then(fn [update | _] -> [update] end)
+    |> Enum.map(&fix_update(&1, ruleset))
+    |> Enum.reduce(0, &middle_of_update/2)
+    |> IO.inspect(label: "part2 answer NOT DONE!")
+  end
 
-  def part2(_rules, _updates) do
+  defp fix_update(update, ruleset) do
+    Enum.reduce(update, [], fn 
+      upd, [] -> [upd]
+
+      upd, acc ->
+        %{before: bf, after: af} = Map.get(ruleset, upd)
+        pos = insert_pos(acc, upd, bf, af)
+        acc
+    end)
+  end
+
+  defp insert_pos(cur_update, upd, bf, af) do
+    is_before? = MapSet.member?(bf, upd)
+    is_after? = MapSet.member?(af, upd)
+    IO.inspect(is_before?, label: "is_before?")
+    IO.inspect(is_after?, label: "is_after?")
+
   end
 end
 
-file = "input"
+file = "test_input"
 [rules, updates] = 
   File.read!(file)
   |> String.split("\n\n", trim: true, parts: 2)
@@ -86,7 +89,30 @@ rules =
 
     {String.to_integer(l), String.to_integer(r)}
   end)
-  # |> IO.inspect(label: "rules")
+
+init_map = %{before: MapSet.new(), after: MapSet.new()}
+
+ruleset = 
+  Enum.reduce(rules, %{}, fn {l, r}, acc ->
+    # Map.update/4 doesn't run the update function when it doesn't find the
+    # key. So i have to initialize it to ensure i don't miss an entry. blah
+    acc_init = 
+      case {Map.get(acc, l), Map.get(acc, r)} do
+        {nil, nil} -> Map.merge(acc, %{l => init_map, r => init_map})
+        {_l_prev, nil} -> Map.put(acc, r, init_map)
+        {nil, _r_prev} -> Map.put(acc, l, init_map)
+        {_l_prev, _r_prev} -> acc
+      end
+
+    acc_init
+    |> Map.update!(l, fn %{before: bf} = places ->
+      %{places | before: MapSet.put(bf, r)}
+    end)
+    |> Map.update!(r, fn %{after: aft} = places ->
+      %{places | after: MapSet.put(aft, l)}
+    end)
+  end)
+|> IO.inspect(label: "ruleset")
 
 updates = 
   updates
@@ -95,10 +121,9 @@ updates =
     String.split(update, ",", trim: true)
     |> Enum.map(&String.to_integer/1)
   end)
-  # |> IO.inspect(label: "updates")
 
-Day5.part1(rules, updates)
-Day5.part2(rules, updates)
+invalid_updates = Day5.part1(ruleset, updates)
+Day5.part2(ruleset, invalid_updates)
 
 
 # 47 | 53 13 61 29
